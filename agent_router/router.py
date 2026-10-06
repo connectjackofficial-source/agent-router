@@ -6,6 +6,15 @@ models, complex ones to expensive ones. No ML, just rules.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
+
+
+def load_tiers_json(path: str) -> list:
+    """Load custom tiers from a JSON file: [{name, cost_per_1k, max_words}]."""
+    import json
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    return [Model(**item) for item in data]
 
 
 @dataclass
@@ -23,13 +32,14 @@ TIERS = [
 ]
 
 
-def route(prompt: str) -> str:
+def route(prompt: str, tiers: Optional[list] = None) -> str:
     """Pick the cheapest model that can handle the prompt length."""
+    tiers = tiers or TIERS
     words = len(prompt.split())
-    for tier in TIERS:
+    for tier in tiers:
         if words <= tier.max_words:
             return tier.name
-    return TIERS[-1].name
+    return tiers[-1].name
 
 
 def estimate_cost(prompt: str, output_words: int = 100) -> dict:
