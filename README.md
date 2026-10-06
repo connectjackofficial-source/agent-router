@@ -28,6 +28,20 @@ print(estimate_cost("write a long essay"))
 | sonnet | $0.003 | 200 words |
 | opus | $0.015 | 200+ words |
 
+## Custom tiers
+
+```json
+// tiers.json
+[{"name": "cheap", "cost_per_1k": 0.0001, "max_words": 10},
+ {"name": "big", "cost_per_1k": 0.01, "max_words": 1000}]
+```
+
+```python
+from agent_router.router import route, load_tiers_json
+tiers = load_tiers_json("tiers.json")
+route("hi", tiers=tiers)  # "cheap"
+```
+
 ## License
 
 MIT
