@@ -42,6 +42,16 @@ tiers = load_tiers_json("tiers.json")
 route("hi", tiers=tiers)  # "cheap"
 ```
 
+## CJK-aware counting
+
+A long Chinese prompt is no longer treated as one giant "word". Tokens are
+counted as words + CJK chars / 1.5, so中文提示词 routes sensibly:
+
+```python
+from agent_router.router import count_tokens
+count_tokens("请分析这段文本并给出建议")  # ≈ 6 tokens, not 1
+```
+
 ## License
 
 MIT
