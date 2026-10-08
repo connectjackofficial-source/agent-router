@@ -32,10 +32,23 @@ TIERS = [
 ]
 
 
+def count_tokens(text: str) -> int:
+    """Approximate token count, English- and CJK-aware.
+
+    English tokens ≈ whitespace-separated words; CJK characters are counted
+    at ~1 token per 1.5 chars so a long Chinese prompt is not treated as one
+    giant "word".
+    """
+    import re
+    cjk = re.findall(r"[\u4e00-\u9fff\u3400-\u4dbf]", text)
+    words = len(text.split())
+    return words + int(len(cjk) / 1.5)
+
+
 def route(prompt: str, tiers: Optional[list] = None) -> str:
     """Pick the cheapest model that can handle the prompt length."""
     tiers = tiers or TIERS
-    words = len(prompt.split())
+    words = count_tokens(prompt)
     for tier in tiers:
         if words <= tier.max_words:
             return tier.name
@@ -46,7 +59,7 @@ def estimate_cost(prompt: str, output_words: int = 100) -> dict:
     """Estimate cost for a prompt + expected output."""
     model = route(prompt)
     m = next(t for t in TIERS if t.name == model)
-    in_cost = (len(prompt.split()) / 1000) * m.cost_per_1k
+    in_cost = (count_tokens(prompt) / 1000) * m.cost_per_1k
     out_cost = (output_words / 1000) * m.cost_per_1k * 3  # output costs more
-    return {"model": model, "input_words": len(prompt.split()),
+    return {"model": model, "input_words": count_tokens(prompt),
             "estimated_cost": round(in_cost + out_cost, 6)}
