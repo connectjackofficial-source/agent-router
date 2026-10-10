@@ -52,6 +52,23 @@ from agent_router.router import count_tokens
 count_tokens("请分析这段文本并给出建议")  # ≈ 6 tokens, not 1
 ```
 
+## Batch routing
+
+Route a whole queue of prompts at once:
+
+```python
+from agent_router.router import batch_route
+
+results = batch_route(["hi", "write a 300-line essay", "short task"])
+# [{"index": 0, "model": "haiku", ...}, {"index": 1, "model": "opus", ...}]
+```
+
+Or via CLI — one prompt per line in a file:
+
+```bash
+python -m agent_router.cli --file prompts.txt
+```
+
 ## License
 
 MIT
