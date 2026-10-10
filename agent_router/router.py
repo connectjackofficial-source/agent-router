@@ -63,3 +63,20 @@ def estimate_cost(prompt: str, output_words: int = 100) -> dict:
     out_cost = (output_words / 1000) * m.cost_per_1k * 3  # output costs more
     return {"model": model, "input_words": count_tokens(prompt),
             "estimated_cost": round(in_cost + out_cost, 6)}
+
+
+def batch_route(prompts: list, tiers: Optional[list] = None,
+                output_words: int = 100) -> list:
+    """Route many prompts at once. Returns one dict per prompt:
+    {index, model, input_words, estimated_cost}."""
+    tiers = tiers or TIERS
+    out = []
+    for i, p in enumerate(prompts):
+        model = route(p, tiers=tiers)
+        m = next(t for t in tiers if t.name == model)
+        tokens = count_tokens(p)
+        in_cost = (tokens / 1000) * m.cost_per_1k
+        out_cost = (output_words / 1000) * m.cost_per_1k * 3
+        out.append({"index": i, "model": model, "input_words": tokens,
+                    "estimated_cost": round(in_cost + out_cost, 6)})
+    return out
