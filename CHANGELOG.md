@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0 - 2026-10-10
+
+- `validate_tiers()` — check custom tier configs before they mis-route
+
 ## 0.3.0 - 2026-10-10
 
 - `batch_route()` for routing many prompts at once

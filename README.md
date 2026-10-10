@@ -42,6 +42,14 @@ tiers = load_tiers_json("tiers.json")
 route("hi", tiers=tiers)  # "cheap"
 ```
 
+Sanity-check a custom tier file before using it (catches unsorted prices
+and flat thresholds that would break routing):
+
+```python
+from agent_router.router import validate_tiers
+print(validate_tiers(tiers))  # [] when valid, list of problems otherwise
+```
+
 ## CJK-aware counting
 
 A long Chinese prompt is no longer treated as one giant "word". Tokens are
