@@ -45,6 +45,34 @@ def count_tokens(text: str) -> int:
     return words + int(len(cjk) / 1.5)
 
 
+def validate_tiers(tiers: list) -> list:
+    """Check a tier list for the invariants routing depends on.
+
+    Returns a list of problem strings (empty = valid).
+    """
+    problems = []
+    if not tiers:
+        return ["tier list is empty"]
+    for i, t in enumerate(tiers):
+        if not t.name:
+            problems.append(f"tier #{i} has no name")
+        if t.cost_per_1k < 0:
+            problems.append(f"tier '{t.name}': negative cost")
+        if t.max_words <= 0:
+            problems.append(f"tier '{t.name}': max_words must be > 0")
+        if i > 0:
+            prev = tiers[i - 1]
+            if t.cost_per_1k < prev.cost_per_1k:
+                problems.append(
+                    f"tier '{t.name}' cheaper than '{prev.name}'; "
+                    "sort tiers by price ascending")
+            if t.max_words <= prev.max_words:
+                problems.append(
+                    f"tier '{t.name}' max_words not above '{prev.name}'; "
+                    "routing thresholds must increase")
+    return problems
+
+
 def route(prompt: str, tiers: Optional[list] = None) -> str:
     """Pick the cheapest model that can handle the prompt length."""
     tiers = tiers or TIERS
