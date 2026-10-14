@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 - 2026-10-14
+
+- `dry_run()` — explain a routing decision (skipped tiers, token count,
+  cost) without dispatching; built for threshold debugging and audits
+
 ## 0.4.0 - 2026-10-10
 
 - `validate_tiers()` — check custom tier configs before they mis-route
