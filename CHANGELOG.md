@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0 - 2026-10-14
+
+- `cost_breakdown(prompts)` — per-model cost share for a batch, for
+  capacity and spend planning
+
 ## 0.5.0 - 2026-10-14
 
 - `dry_run()` — explain a routing decision (skipped tiers, token count,
