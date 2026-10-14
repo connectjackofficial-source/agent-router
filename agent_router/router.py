@@ -108,3 +108,38 @@ def batch_route(prompts: list, tiers: Optional[list] = None,
         out.append({"index": i, "model": model, "input_words": tokens,
                     "estimated_cost": round(in_cost + out_cost, 6)})
     return out
+
+
+def dry_run(prompt: str, tiers: Optional[list] = None) -> dict:
+    """Explain a routing decision without dispatching anything.
+
+    Returns the chosen model plus the full decision trail: token count,
+    which tiers were skipped and why, and the estimated cost — useful for
+    debugging thresholds and for audits ("why did this go to opus?").
+    """
+    tiers = tiers or TIERS
+    tokens = count_tokens(prompt)
+    skipped = []
+    chosen = None
+    for tier in tiers:
+        if tokens <= tier.max_words:
+            chosen = tier
+            break
+        skipped.append({"model": tier.name,
+                        "reason": f"{tokens} > max_words {tier.max_words}"})
+    if chosen is None:
+        chosen = tiers[-1]
+        skipped = [{"model": t.name,
+                    "reason": f"{tokens} > max_words {t.max_words}"}
+                   for t in tiers[:-1]]
+    in_cost = (tokens / 1000) * chosen.cost_per_1k
+    out_cost = (100 / 1000) * chosen.cost_per_1k * 3
+    return {
+        "model": chosen.name,
+        "input_words": tokens,
+        "skipped": skipped,
+        "reason": (f"input {tokens} words <= max_words {chosen.max_words}"
+                   if tokens <= chosen.max_words else
+                   f"no tier fits; fell back to most capable '{chosen.name}'"),
+        "estimated_cost": round(in_cost + out_cost, 6),
+    }
