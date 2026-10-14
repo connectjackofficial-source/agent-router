@@ -143,3 +143,20 @@ def dry_run(prompt: str, tiers: Optional[list] = None) -> dict:
                    f"no tier fits; fell back to most capable '{chosen.name}'"),
         "estimated_cost": round(in_cost + out_cost, 6),
     }
+
+
+def cost_breakdown(prompts: list, tiers: Optional[list] = None,
+                   output_words: int = 100) -> dict:
+    """Per-model cost share for a batch of prompts.
+
+    Runs :func:`batch_route` over the whole batch and rolls the results
+    up by model: how much of this workload's spend lands on each tier.
+    Returns {"total": float, "by_model": {model: cost}}.
+    """
+    totals: dict[str, float] = {}
+    for item in batch_route(prompts, tiers=tiers,
+                            output_words=output_words):
+        model = item["model"]
+        totals[model] = totals.get(model, 0.0) + item["estimated_cost"]
+    return {"total": round(sum(totals.values()), 6),
+            "by_model": {m: round(c, 6) for m, c in totals.items()}}
